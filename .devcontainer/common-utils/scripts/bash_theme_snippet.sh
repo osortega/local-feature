@@ -22,3 +22,27 @@ __bash_prompt() {
 }
 __bash_prompt
 export PROMPT_DIRTRIM=4
+
+# Check if the terminal is xterm
+if [[ "$TERM" == "xterm" ]]; then
+    # Function to set the terminal title to the current command
+    preexec() {
+        local cmd="${BASH_COMMAND}"
+        echo -ne "\033]0;${USER}@${HOSTNAME}: ${cmd}\007"
+    }
+
+    # Function to reset the terminal title to the shell type after the command is executed
+    precmd() {
+        echo -ne "\033]0;${USER}@${HOSTNAME}: ${SHELL}\007"
+    }
+
+    # Trap DEBUG signal to call preexec before each command
+    trap 'preexec' DEBUG
+
+    # Append precmd to PROMPT_COMMAND if it is already set
+    if [[ -n "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND="${PROMPT_COMMAND}; precmd"
+    else
+        PROMPT_COMMAND='precmd'
+    fi
+fi
